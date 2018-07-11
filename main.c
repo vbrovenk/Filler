@@ -25,6 +25,18 @@ typedef struct  s_token
 	int x;
 }				t_token;
 
+typedef struct  s_filler{
+	char 	player;
+	int		map_n;
+	int 	map_x;
+	int 	token_n;
+	int 	token_x;
+
+
+}				t_filler;
+
+
+
 void	print_array(int array[4][4])
 {
 	for (int i = 0; i < 4; i++)
@@ -141,7 +153,6 @@ void	set_token(int **array_manhet, char **array_token, char arr[4][4], t_token t
 					j = -1;
 					while (++j < token.x)
 					{
-						
 						arr[x][y] = array_token[i][j];
 						if (y < 4)
 							y++;
@@ -159,42 +170,114 @@ void	set_token(int **array_manhet, char **array_token, char arr[4][4], t_token t
 	print_array_char(arr, 4, 4);
 }
 
+void	get_map_size(int fd, t_filler *filler)
+{
+	char *line;
+	int i;
+	int start;
+	char **coord;
+
+	i = 0;
+	get_next_line(0, &line);
+	if (ft_strstr(line, "Plateau"))
+	{
+		// while (!ft_isdigit(line[i]))
+		// 	i++;
+		// start = i;
+		// while (ft_isdigit(line[i]))
+		// 	i++;
+		// coord = ft_strsub(line, start, i - start);
+		// filler->map_n = ft_atoi(coord);
+		// free(coord);
+		// i++;
+		// start = i;
+		// while (ft_isdigit(line[i]))
+		// 	i++;
+		// coord = ft_strsub(line, start, i - start);
+		// filler->map_x = ft_atoi(coord);
+		// free(coord);
+		coord = ft_strsplit(line, ' ');
+		filler->map_n = ft_atoi(coord[1]);
+		filler->map_x = ft_atoi(coord[2]);
+	}
+}
+
+void	get_token_size(int fd, char *line, t_filler *filler)
+{
+	char	**coord;
+
+	coord = ft_strsplit(line, ' ');
+	filler->token_n = ft_atoi(coord[1]); // lines
+	filler->token_x = ft_atoi(coord[2]); // columns
+}
+
+
+char	**create_map(int fd, t_filler *filler)
+{
+	char *line;
+	int n;
+	char **map;
+	int i;
+
+	i = -1;
+	map = (char **)malloc(sizeof(char **) * filler->map_n);
+	// while (++i < filler->map_n)
+	// 	map[i] = (char *)malloc(sizeof(char) * (filler->map_x + 1));
+	i = 0;
+	while (get_next_line(0, &line) > 0 && !ft_strstr(line, "Piece"))
+	{
+		if (line[4] == '.')
+		{
+			map[i] = ft_strsub(line, 4, filler->map_x);
+			i++;
+		}
+	}
+
+	get_token_size(fd, line, filler);
+	return (map);
+}
+
 int main(int argc, char **argv)
 {
 	int fd;
 	char *line;
-	char **array_token;
-	int  **array_manhet;
+	// char **array_token;
+	// int  **array_manhet;
 
 	t_token token;
 
-	char arr[4][4] = {
-		{'O','.','.','.'},
-		{'.','.','.','.'},
-		{'.','.','X','.'},
-		{'.','.','.','.'},
-	};
+	t_filler *filler;
+
 
 	// print_array_char(arr , 4, 4);
-	array_manhet = manhet(arr);
+	// array_manhet = manhet(arr);
+
+	filler = malloc(sizeof(filler));
+
+	fd = open("input.txt", O_WRONLY);
+	get_next_line(0, &line);
+
+	line[10] == '1' ? (filler->player = 'X') : (filler->player = 'O');
+
+	get_map_size(fd, filler);  // size of map
+	char **map = create_map(fd, filler);
+
+	// for (int j = 0; j < filler->map_n; j++)
+	// 	dprintf(fd, "%s\n", map[j]);
+	// dprintf(fd, "token_n = %d token_x = %d\n", filler->token_n, filler->token_x);
 
 
-	fd = open("token.txt", O_RDONLY);
-	get_next_line(fd, &line);
-	token.n = ft_atoi(&line[6]); // lines
-	token.x = ft_atoi(&line[8]); // columns
-	
 	// printf("token.n = %d token.x = %d\n", token.n, token.x);
 
-	int i = -1;
-	int j = -1;
-	array_token = malloc(sizeof(char *) * token.n);
-	while (++i < token.n)
-		array_token[i] = malloc(sizeof(char) * (token.x + 1));
-	fill_token(array_token, token, fd);
+	// int i = -1;
+	// int j = -1;
+	// array_token = malloc(sizeof(char *) * token.n);
+	// while (++i < token.n)
+	// 	array_token[i] = malloc(sizeof(char) * (token.x + 1));
+	// fill_token(array_token, token, fd);
 
 
-	set_token(array_manhet, array_token, arr, token);
+	// set_token(array_manhet, array_token, arr, token);
 
 	return (0);
 }
