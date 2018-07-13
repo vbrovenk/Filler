@@ -1,2 +1,3 @@
-seed = 961
-O: timedout
+seed = 964
+O: error on input
+./vbrovenk.filler: Segfault at 0
