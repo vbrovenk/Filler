@@ -1,3 +1,4 @@
-seed = 964
-O: error on input
-./vbrovenk.filler: Segfault at 0
+seed = 6167
+./vbrovenk.filler won
+Score:
+43AGAINST328

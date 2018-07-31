@@ -12,105 +12,69 @@
 
 #include "get_next_line.h"
 
-static t_gnl	*find_fd(int fd, t_gnl **head)
+void	save_after_new(t_gnl *gnl, char *end_str)
 {
-	t_gnl *elem;
+	char *dup_end;
 
-	elem = *head;
-	while (elem && elem->fd != fd)
-		elem = elem->next;
-	return (elem);
+	gnl->length = ft_strlen(end_str) - 1;
+	end_str += 1;
+	dup_end = ft_strdup(end_str);
+	ft_bzero(gnl->string, ft_strlen(gnl->string));
+	ft_strcpy(gnl->string, dup_end);
+	ft_strdel(&dup_end);
 }
 
-static int		find_line(char *buff, t_gnl **head, int fd)
+void	help_func(t_gnl *gnl, char **line, char *end_str)
 {
-	t_gnl	*elem;
-	char	*temp;
+	char *temp;
+	char *last_line;
 
-	elem = find_fd(fd, head);
-	if (elem == NULL)
+	if (end_str != NULL)
 	{
-		if (!(elem = (t_gnl *)ft_lstnew((void *)buff, ft_strlen(buff) + 1)))
-			return (-1);
-		elem->fd = fd;
-		ft_lstadd_back((t_list **)head, (t_list *)elem);
+		temp = ft_strsub(gnl->string, 0,
+		ft_strlen(gnl->string) - ft_strlen(end_str));
+		save_after_new(gnl, end_str);
 	}
 	else
 	{
-		if (!(temp = ft_strjoin((char *)elem->str, buff)))
-			return (-1);
-		free(elem->str);
-		elem->str = temp;
-		elem->str_size = ft_strlen(temp) + 1;
+		temp = ft_strdup(gnl->string);
+		gnl->length = 0;
 	}
-	if (ft_strchr(elem->str, '\n') != NULL)
-		return (1);
-	return (0);
-}
-
-static char		*get_str(t_gnl **head, int fd)
-{
-	char	*start;
-	t_gnl	*elem;
-
-	elem = find_fd(fd, head);
-	if (!(start = ft_strdup((char *)elem->str)))
-		return (NULL);
-	free(elem->str);
-	elem->str = NULL;
-	elem->str_size = 0;
-	return (start);
-}
-
-static char		*get_substr(t_gnl **head, int fd)
-{
-	char	*start;
-	char	*end;
-	t_gnl	*elem;
-	char	*temp;
-
-	elem = find_fd(fd, head);
-	if (elem == NULL)
-		return (NULL);
-	if ((end = ft_strchr(elem->str, '\n')) != NULL)
+	last_line = *line;
+	if (*line != NULL)
 	{
-		if (!(start = ft_strsub((char *)elem->str, 0,
-			elem->str_size - ft_strlen(++end) - 2)))
-			return (NULL);
-		temp = elem->str;
-		if (ft_strlen(end) == 0)
-			elem->str = NULL;
-		else
-			elem->str = (void *)ft_strdup(end);
-		elem->str_size = ft_strlen(end) + 1;
+		*line = ft_strjoin(last_line, temp);
 		free(temp);
+		free(last_line);
 	}
 	else
-		start = get_str(head, fd);
-	return (start);
+		*line = temp;
 }
 
-int				get_next_line(const int fd, char **line)
+int		get_next_line(const int fd, char **line)
 {
-	char			buff[BUFF_SIZE + 1];
-	static t_gnl	*head;
-	int				ret;
-	int				find;
-	
-	if (line == NULL || fd < 0 || read(fd, buff, 0) < 0)
+	static	t_gnl	gnl[4000];
+	char			*end_str;
+
+	if (read(fd, 0, 0) < 0 || line == NULL)
 		return (-1);
-	while ((ret = read(fd, buff, BUFF_SIZE)) != 0)
+	*line = 0;
+	end_str = 0;
+	while (end_str == 0)
 	{
-		buff[ret] = '\0';
-		if ((find = find_line(buff, &head, fd)) == 1)
+		if (gnl[fd].length == 0)
 		{
-			*line = get_substr(&head, fd);
-			return (1);
+			if ((gnl[fd].length = read(fd, gnl[fd].string, BUFF_SIZE)) < 1)
+			{
+				if (*line != NULL)
+					return (1);
+				else
+					return (0);
+			}
 		}
-		if (find == -1)
-			return (-1);
+		gnl[fd].string[gnl[fd].length] = '\0';
+		end_str = ft_strchr(gnl[fd].string, '\n');
+		help_func(&gnl[fd], line, end_str);
 	}
-	if ((*line = get_substr(&head, fd)) != NULL)
-		return (1);
-	return (0);
+	return (1);
 }

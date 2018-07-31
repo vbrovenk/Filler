@@ -11,15 +11,11 @@
 # **************************************************************************** #
 
 NAME = vbrovenk.filler
-
 INC_DIR = ./libft/includes/
-
-SRC = main.c
-
+SRC = main.c manhattan.c create.c get_sizes.c determine_coord.c
 OBJ = $(SRC:.c=.o)
-
+FLAGS = -Wall -Wextra -Werror
 LIBFT = libft/libft.a
-
 OFF=\033[0m
 
 RED=\033[31m
@@ -35,7 +31,7 @@ all: $(NAME)
 
 $(NAME): $(OBJ)
 	@make -C libft/
-	@gcc $(OBJ) $(LIBFT) -o $(NAME)
+	@gcc $(FLAGS) $(OBJ) $(LIBFT) -o $(NAME)
 	@echo "$(PURPLEBOLD)Filler is ready.$(OFF)"
 
 %.o: %.c

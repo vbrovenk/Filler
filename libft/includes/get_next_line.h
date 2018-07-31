@@ -16,14 +16,12 @@
 # include "libft.h"
 # define BUFF_SIZE 1
 
-typedef struct		s_gnl
+typedef	struct	s_gnl
 {
-	void			*str;
-	size_t			str_size;
-	struct s_gnl	*next;
-	int				fd;
-}					t_gnl;
+	char		string[BUFF_SIZE + 1];
+	size_t		length;
+}				t_gnl;
 
-int					get_next_line(const int fd, char **line);
+int				get_next_line(const int fd, char **line);
 
 #endif
